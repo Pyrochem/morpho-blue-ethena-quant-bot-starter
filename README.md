@@ -1,6 +1,3 @@
-# morpho-blue-ethena-quant-bot-starter
-Python starter kit for monitoring Morpho Blue 90% utilization kinks, exact borrower liquidation prices, and Ethena sUSDe 8-hour intra-epoch yield dilution.
-
 # Morpho Blue & Ethena (sUSDe) Quant Bot Starter Kit (Python)
 
 An open-source Python monitoring and execution-simulation starter kit for **Morpho Blue** leveraged loopers, liquidators, and **Ethena (`sUSDe`)** basis-trade bots.
