@@ -73,7 +73,7 @@ def broadcast_alpha():
         f"• Live Borrow Rate: <code>{borrow_apy:.2f}% APY</code>\n"
         f"• +$2M Whale Slippage: <code>{sim_apy:.2f}% APY</code>\n\n"
         f"💰 <b>5x Loop Net Carry:</b> <code>{net_5x_roe:+.2f}% ROE</code>\n\n"
-        f"⚡ <i>Powered by Stateless Multicall3 Quant API</i> — <a href='{STOREFRONT_URL}'>Get API Access on RapidAPI</a>"
+        f"⚡ <i>Powered by Stateless Multicall Quant API</i> — <a href='https://rapidapi.com/TimothyWalters/api/defi-quant-simulators-morpho-blue-ethena'>Get API Access on RapidAPI</a>"
     )
 
     tg_url = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
