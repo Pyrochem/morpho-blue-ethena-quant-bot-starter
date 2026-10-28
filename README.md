@@ -1,4 +1,4 @@
->📡 **Live Proof-of-Concept Feed:** Watch this API broadcast live Morpho 90% kink stress tests & Ethena epoch drips every 4 hours on our **[Public Telegram Quant Monitor](https://t.me/morpho_ethena_quant)**.
+>📡 **Live Proof-of-Concept Feed:** Watch this API broadcast live Morpho 90% kink stress tests & Ethena epoch drips every 8 hours on our **[Public Telegram Quant Monitor](https://t.me/morpho_ethena_quant)**.
 
 # Morpho Blue & Ethena (sUSDe) Quant Bot Starter Kit (Python)
 
