@@ -14,10 +14,10 @@ If you build automated strategies on **Morpho Blue** or **Ethena**, standard Gra
 
 ## Quick Start (Zero RPC Setup Required)
 
-This starter kit uses the **[Stateless DeFi Quant Simulators API on RapidAPI](https://rapidapi.com/TimothyWalters/api/defi-quant-simulators-morpho-blue-ethena)** to execute atomic `Multicall3` state simulations and normalize 36-decimal Solidity math (`WAD` / `ORACLE_PRICE_SCALE`) into clean JSON in a single `GET` request.
+This starter kit uses the **[Stateless DeFi Quant Simulators API on RapidAPI](https://rapidapi.com/infio-infio-quant/api/defi-quant-simulators-morpho-blue-ethena)** to execute atomic `Multicall3` state simulations and normalize 36-decimal Solidity math (`WAD` / `ORACLE_PRICE_SCALE`) into clean JSON in a single `GET` request.
 
 ### 1. Grab a Free API Key
-1. Go to the **[DeFi Quant Simulators RapidAPI Hub Page](https://rapidapi.com/TimothyWalters/api/defi-quant-simulators-morpho-blue-ethena)**.
+1. Go to the **[DeFi Quant Simulators RapidAPI Hub Page](https://rapidapi.com/infio-infio-quant/api/defi-quant-simulators-morpho-blue-ethena)**.
 2. Subscribe to the **Basic (Free)** tier (`100 requests/month` — no credit card required to test) or **Pro** for 24/7 bot polling.
 3. Copy your `X-RapidAPI-Key` and `X-RapidAPI-Host`.
 
