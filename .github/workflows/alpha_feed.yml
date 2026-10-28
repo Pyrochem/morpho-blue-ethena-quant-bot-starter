@@ -2,7 +2,7 @@ name: Live On-Chain Alpha Feed
 
 on:
   schedule:
-    - cron: '0 */4 * * *'
+    - cron: '0 */8 * * *'
   workflow_dispatch:
 
 jobs:
