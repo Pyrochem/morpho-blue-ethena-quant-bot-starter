@@ -55,4 +55,4 @@ Building multi-protocol execution or yield-routing bots? Check out our companion
 
 1. **[Morpho Blue & Ethena (`sUSDe`) Quant Bot Starter](https://github.com/Pyrochem/morpho-blue-ethena-quant-bot-starter)** — Intra-block `AdaptiveCurveIRM` 90% kink slippage, `10^36` oracle health factors, and Ethena 8-hour linear vesting dilution.
 2. **[Fluid Protocol (`BigMath`) & Sky (`sUSDS`) Quant Bot Starter](https://github.com/Pyrochem/fluid-sky-susds-quant-bot-starter)** — 256-bit `BigMathMinified` storage slot unpacking and un-dripped `sUSDS` (`RAY` $10^{27}$ `rpow`) leveraged carry simulations.
-3. **[Live Telegram Quant Monitor](https://t.me/+QVh6pF4DzIthYmIx)** — Automated 4-hour on-chain telemetry broadcasts powered by our RapidAPI endpoints.
+3. **[Live Telegram Quant Monitor](https://t.me/+QVh6pF4DzIthYmIx)** — Automated 8-hour on-chain telemetry broadcasts powered by our RapidAPI endpoints.
