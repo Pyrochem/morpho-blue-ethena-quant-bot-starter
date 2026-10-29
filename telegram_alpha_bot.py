@@ -2,18 +2,20 @@ import os
 import requests
 
 RAPIDAPI_KEY = os.environ["RAPIDAPI_KEY"].strip()
-RAPIDAPI_HOST = os.environ["RAPIDAPI_HOST"].strip().replace("https://", "").replace("http://", "").strip("/")
+RAPIDAPI_HOST_1 = os.environ["RAPIDAPI_HOST"].strip().replace("https://", "").strip("/")
+# After creating RapidAPI Project #2, add RAPIDAPI_HOST_2 to GitHub Secrets (or fallback to Host 1)
+RAPIDAPI_HOST_2 = os.environ.get("RAPIDAPI_HOST_2", RAPIDAPI_HOST_1).strip().replace("https://", "").strip("/")
+
 TG_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"].strip()
 TG_CHAT = os.environ["TELEGRAM_CHAT_ID"].strip()
 
-# Paste your RapidAPI Storefront URL here
-STOREFRONT_URL = "https://rapidapi.com/infio-infio-quant/api/defi-quant-simulators-morpho-blue-ethena"
+STOREFRONT_MORPHO_ETHENA = "https://rapidapi.com/infio-infio-quant/api/defi-quant-simulators-morpho-blue-ethena"
+STOREFRONT_FLUID_SKY = "https://rapidapi.com/infio-infio-quant/api/fluid-bigmath-and-sky-susds-quant-simulators"
 
-# Flagship Morpho Blue wstETH/USDC market (Fallback to sUSDe/DAI)
 MARKET_ID = "0xb323495f7e4148be5643a4ea4a8221eef163e4bccfdedc2a6f4696baacbc86cc"
+WSTETH_TOKEN = "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0"
 
 def find_val(data, target_keys, default=0.0):
-    """Recursively searches nested JSON dicts for the first matching key."""
     if not isinstance(data, dict):
         return default
     for k in target_keys:
@@ -27,67 +29,46 @@ def find_val(data, target_keys, default=0.0):
     return default
 
 def broadcast_alpha():
-    headers = {"x-rapidapi-key": RAPIDAPI_KEY, "x-rapidapi-host": RAPIDAPI_HOST}
+    h1 = {"x-rapidapi-key": RAPIDAPI_KEY, "x-rapidapi-host": RAPIDAPI_HOST_1}
+    h2 = {"x-rapidapi-key": RAPIDAPI_KEY, "x-rapidapi-host": RAPIDAPI_HOST_2}
 
-    # 1. Fetch Ethena sUSDe Live Epoch Data
-    ethena_resp = requests.get(
-        f"https://{RAPIDAPI_HOST}/api/v1/ethena/vesting-and-dilution",
-        headers=headers, params={"simStakeUsde": 25000000}, timeout=20
-    )
-    print("Ethena Status:", ethena_resp.status_code)
-    ethena = ethena_resp.json()
+    # 1. Ethena & Morpho (API #1)
+    ethena = requests.get(f"https://{RAPIDAPI_HOST_1}/api/v1/ethena/vesting-and-dilution", headers=h1, params={"simStakeUsde": 25000000}, timeout=20).json()
+    morpho = requests.get(f"https://{RAPIDAPI_HOST_1}/api/v1/morpho/market-and-risk", headers=h1, params={"marketId": MARKET_ID, "simBorrowDelta": 2000000}, timeout=20).json()
 
-    # 2. Fetch Morpho Blue Market & Kink Data
-    morpho_resp = requests.get(
-        f"https://{RAPIDAPI_HOST}/api/v1/morpho/market-and-risk",
-        headers=headers, params={"marketId": MARKET_ID, "simBorrowDelta": 2000000}, timeout=20
-    )
-    print("Morpho Status:", morpho_resp.status_code)
-    morpho = morpho_resp.json()
-    print("Morpho JSON Keys:", list(morpho.keys()))
+    # 2. Fluid & Sky sUSDS (API #2)
+    fluid = requests.get(f"https://{RAPIDAPI_HOST_2}/api/v1/fluid/liquidity-state", headers=h2, params={"token": WSTETH_TOKEN, "simBorrowDelta": 2500}, timeout=20).json()
+    sky = requests.get(f"https://{RAPIDAPI_HOST_2}/api/v1/sky/susds-carry-simulator", headers=h2, params={"leverage": 6}, timeout=20).json()
 
-    if "error" in morpho or morpho_resp.status_code != 200:
-        raise RuntimeError(f"Morpho Endpoint returned error: {morpho}")
-
-    # Extract Ethena metrics
-    earn_apy = float(find_val(ethena, ["liveAnnualizedApyPercent", "currentApyPercent", "apy"]))
+    # Parse API #1
+    earn_apy = float(find_val(ethena, ["liveAnnualizedApyPercent", "currentApyPercent"]))
     drip = float(find_val(ethena, ["linearDripUsdePerSecond", "dripPerSecond"]))
-    unvested = float(find_val(ethena, ["unvestedRemainingUsde", "unvestedAmount", "unvestedUsde"]))
+    m_util = float(find_val(morpho, ["utilizationPercent", "utilization"]))
+    m_borrow = float(find_val(morpho, ["currentBorrowApyPercent", "borrowApyPercent"]))
 
-    # Extract Morpho metrics (adapts automatically to your exact schema)
-    util = float(find_val(morpho, ["utilizationPercent", "utilization", "currentUtilizationPercent"]))
-    borrow_apy = float(find_val(morpho, ["currentBorrowApyPercent", "borrowApyPercent", "borrowApy"]))
-    sim_apy = float(find_val(morpho, ["simulatedPostTradeBorrowApyPercent", "postTradeBorrowApyPercent", "simulatedBorrowApyPercent"], borrow_apy))
-    is_above_kink = bool(find_val(morpho, ["isAbove90PercentKink", "isAboveKink"], util >= 90.0))
-    kink_flag = "🚨 ABOVE 90% KINK" if is_above_kink else "✅ Below 90% Kink"
-
-    net_5x_roe = ((5.0 * earn_apy) - (4.0 * borrow_apy))
+    # Parse API #2
+    f_util = float(find_val(fluid, ["utilizationPercent"]))
+    f_borrow = float(find_val(fluid, ["borrowAprPercent"]))
+    f_avail = float(find_val(fluid, ["availableLiquidityHuman"]))
+    sky_apy = float(find_val(sky, ["liveSsrApyPercent"]))
+    sky_roe = float(find_val(sky, ["netLeveragedRoePercent"]))
 
     msg = (
-        f"📡 <b>Live DeFi Quant State (Morpho + Ethena)</b>\n\n"
-        f"🟢 <b>Ethena sUSDe (Live 8h Epoch)</b>\n"
-        f"• Real-Time Yield: <code>{earn_apy:.2f}% APY</code>\n"
-        f"• Unvested Drip: <code>${drip:.2f}/sec</code> (<code>${unvested:,.0f}</code> rem)\n\n"
-        f"🏦 <b>Morpho Blue (Flagship Market)</b>\n"
-        f"• Utilization: <code>{util:.2f}%</code> ({kink_flag})\n"
-        f"• Live Borrow Rate: <code>{borrow_apy:.2f}% APY</code>\n"
-        f"• +$2M Whale Slippage: <code>{sim_apy:.2f}% APY</code>\n\n"
-        f"💰 <b>5x Loop Net Carry:</b> <code>{net_5x_roe:+.2f}% ROE</code>\n\n"
-        f"⚡ <i>Powered by Stateless Multicall Quant API</i> — <a href='https://rapidapi.com/infio-infio-quant/api/defi-quant-simulators-morpho-blue-ethena'>Get API Access on RapidAPI</a>"
+        f"📡 <b>Live DeFi Quant Suite Telemetry (4-Protocol Snapshot)</b>\n\n"
+        f"🟢 <b>Ethena sUSDe (8h Epoch):</b> <code>{earn_apy:.2f}% APY</code> (<code>${drip:.2f}/s</code> drip)\n"
+        f"🏦 <b>Morpho Blue:</b> <code>{m_util:.2f}% Util</code> | <code>{m_borrow:.2f}% Borrow APY</code>\n"
+        f"💧 <b>Fluid (wstETH BigMath):</b> <code>{f_util:.2f}% Util</code> | <code>{f_borrow:.2f}% APR</code> (<code>{f_avail:,.0f} wstETH</code> avail)\n"
+        f"☀️ <b>Sky sUSDS (6x Carry Loop):</b> <code>{sky_apy:.2f}% SSR</code> → <code>{sky_roe:+.2f}% Net ROE</code>\n\n"
+        f"⚡ <b>Stateless Multicall3 APIs on RapidAPI:</b>\n"
+        f"• <a href='{STOREFRONT_MORPHO_ETHENA}'>Morpho Blue & Ethena Quant API</a>\n"
+        f"• <a href='{STOREFRONT_FLUID_SKY}'>Fluid BigMath & Sky sUSDS Quant API</a>"
     )
 
-    tg_url = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
-    tg_res = requests.post(tg_url, json={
-        "chat_id": TG_CHAT,
-        "text": msg,
-        "parse_mode": "HTML",
-        "disable_web_page_preview": True
-    }, timeout=15)
-
-    if not tg_res.ok:
-        raise RuntimeError(f"Telegram API Error ({tg_res.status_code}): {tg_res.text}")
-
-    print("Telegram broadcast sent successfully!")
+    requests.post(
+        f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
+        json={"chat_id": TG_CHAT, "text": msg, "parse_mode": "HTML", "disable_web_page_preview": True},
+        timeout=15
+    ).raise_for_status()
 
 if __name__ == "__main__":
     broadcast_alpha()
