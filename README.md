@@ -1,4 +1,4 @@
->📡 **Live Proof-of-Concept Feed:** Watch this API broadcast live Morpho 90% kink stress tests & Ethena epoch drips every 8 hours on our **[Public Telegram Quant Monitor](https://t.me/morpho_ethena_quant)**.
+>📡 **Live Proof-of-Concept Feed:** Watch this API broadcast live Morpho 90% kink stress tests & Ethena epoch drips every 8 hours on our **[Public Telegram Quant Monitor](https://t.me/+QVh6pF4DzIthYmIx)**.
 
 # Morpho Blue & Ethena (sUSDe) Quant Bot Starter Kit (Python)
 
@@ -47,3 +47,12 @@ Pass any of these verified 32-byte `marketId` strings into `MARKET_ID` inside `l
 | **sUSDe / DAI** | `91.5%` | Aggressive `sUSDe` / DAI leverage loop | `0x1247f1c237eceae0602eab1470a5061a6dd8f734ba88c7cdc5d6109fb0026b28` |
 | **fxSAVE / USDC** | `91.5%` | High-yield stablecoin loop (RockawayX / Clearstar curated) | `0x17f7ae1b52670010976b3fe41324cbb2b1eb7dd8f492e51764b2828371b86b84` |
 
+---
+
+## 🔗 Full DeFi Quantitative API Suite
+
+Building multi-protocol execution or yield-routing bots? Check out our companion open-source starter kits and stateless `Multicall3` APIs:
+
+1. **[Morpho Blue & Ethena (`sUSDe`) Quant Bot Starter](https://github.com/Pyrochem/morpho-blue-ethena-quant-bot-starter)** — Intra-block `AdaptiveCurveIRM` 90% kink slippage, `10^36` oracle health factors, and Ethena 8-hour linear vesting dilution.
+2. **[Fluid Protocol (`BigMath`) & Sky (`sUSDS`) Quant Bot Starter](https://github.com/Pyrochem/fluid-sky-susds-quant-bot-starter)** — 256-bit `BigMathMinified` storage slot unpacking and un-dripped `sUSDS` (`RAY` $10^{27}$ `rpow`) leveraged carry simulations.
+3. **[Live Telegram Quant Monitor](https://t.me/+QVh6pF4DzIthYmIx)** — Automated 4-hour on-chain telemetry broadcasts powered by our RapidAPI endpoints.
