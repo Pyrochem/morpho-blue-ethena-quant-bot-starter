@@ -43,6 +43,7 @@ def broadcast_alpha():
     # Parse API #1
     earn_apy = float(find_val(ethena, ["liveAnnualizedApyPercent", "currentApyPercent"]))
     drip = float(find_val(ethena, ["linearDripUsdePerSecond", "dripPerSecond"]))
+    unvested = float(find_val(ethena, ["unvestedRemainingUsde", "unvestedAmount", "unvestedUsde"]))
     m_util = float(find_val(morpho, ["utilizationPercent", "utilization"]))
     m_borrow = float(find_val(morpho, ["currentBorrowApyPercent", "borrowApyPercent"]))
 
