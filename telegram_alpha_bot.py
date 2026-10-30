@@ -48,10 +48,10 @@ def broadcast_alpha():
     # Extract Morpho metrics (adapts automatically to your exact schema)
     m_util = float(find_val(morpho, ["utilizationPercent", "utilization"]))
     m_borrow = float(find_val(morpho, ["currentBorrowApyPercent", "borrowApyPercent"]))
-    sim_apy = float(find_val(morpho, ["simulatedPostTradeBorrowApyPercent", "postTradeBorrowApyPercent", "simulatedBorrowApyPercent"], borrow_apy))
-    net_5x_roe = ((5.0 * earn_apy) - (4.0 * borrow_apy))
+    sim_apy = float(find_val(morpho, ["simulatedPostTradeBorrowApyPercent", "postTradeBorrowApyPercent", "simulatedBorrowApyPercent"], m_borrow))
     is_above_kink = bool(find_val(morpho, ["isAbove90PercentKink", "isAboveKink"], util >= 90.0))
     kink_flag = "🚨 ABOVE 90% KINK" if is_above_kink else "✅ Below 90% Kink"
+    net_5x_roe = ((5.0 * earn_apy) - (4.0 * m_borrow))
 
     # Parse API #2
     f_util = float(find_val(fluid, ["utilizationPercent"]))
