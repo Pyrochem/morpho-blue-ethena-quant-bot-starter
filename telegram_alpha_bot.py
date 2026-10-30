@@ -55,8 +55,14 @@ def broadcast_alpha():
 
     msg = (
         f"📡 <b>Live DeFi Quant Suite Telemetry (4-Protocol Snapshot)</b>\n\n"
-        f"🟢 <b>Ethena sUSDe (8h Epoch):</b> <code>{earn_apy:.2f}% APY</code> (<code>${drip:.2f}/s</code> drip)\n"
-        f"🏦 <b>Morpho Blue:</b> <code>{m_util:.2f}% Util</code> | <code>{m_borrow:.2f}% Borrow APY</code>\n"
+        f"🟢 <b>Ethena sUSDe (8h Epoch):</b>\n" 
+        f"• Real-Time Yield: <code>{earn_apy:.2f}% APY</code>\n"
+        f"• Unvested Drip: <code>${drip:.2f}/sec</code> (<code>${unvested:,.0f}</code> rem)\n\n"
+        f"🏦 <b>Morpho Blue:</b>\n" 
+        f"• Utilization: <code>{util:.2f}%</code> ({kink_flag})\n"
+        f"• Live Borrow Rate: <code>{borrow_apy:.2f}% APY</code>\n"
+        f"• +$2M Whale Slippage: <code>{sim_apy:.2f}% APY</code>\n\n"
+        f"💰 <b>5x Loop Net Carry:</b> <code>{net_5x_roe:+.2f}% ROE</code>\n\n"
         f"💧 <b>Fluid (wstETH BigMath):</b> <code>{f_util:.2f}% Util</code> | <code>{f_borrow:.2f}% APR</code> (<code>{f_avail:,.0f} wstETH</code> avail)\n"
         f"☀️ <b>Sky sUSDS (6x Carry Loop):</b> <code>{sky_apy:.2f}% SSR</code> → <code>{sky_roe:+.2f}% Net ROE</code>\n\n"
         f"⚡ <b>Stateless Multicall3 APIs on RapidAPI:</b>\n"
