@@ -3,7 +3,6 @@ import requests
 
 RAPIDAPI_KEY = os.environ["RAPIDAPI_KEY"].strip()
 RAPIDAPI_HOST_1 = os.environ["RAPIDAPI_HOST"].strip().replace("https://", "").strip("/")
-# After creating RapidAPI Project #2, add RAPIDAPI_HOST_2 to GitHub Secrets (or fallback to Host 1)
 RAPIDAPI_HOST_2 = os.environ.get("RAPIDAPI_HOST_2", RAPIDAPI_HOST_1).strip().replace("https://", "").strip("/")
 
 TG_TOKEN = os.environ["TELEGRAM_BOT_TOKEN"].strip()
@@ -14,6 +13,8 @@ STOREFRONT_FLUID_SKY = "https://rapidapi.com/infio-infio-quant/api/fluid-bigmath
 
 MARKET_ID = "0xb323495f7e4148be5643a4ea4a8221eef163e4bccfdedc2a6f4696baacbc86cc"
 WSTETH_TOKEN = "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0"
+SIM_FLUID_BORROW = 2500
+TARGET_SKY_LEVERAGE = 6
 
 def find_val(data, target_keys, default=0.0):
     if not isinstance(data, dict):
@@ -33,19 +34,40 @@ def broadcast_alpha():
     h2 = {"x-rapidapi-key": RAPIDAPI_KEY, "x-rapidapi-host": RAPIDAPI_HOST_2}
 
     # 1. Ethena & Morpho (API #1)
-    ethena = requests.get(f"https://{RAPIDAPI_HOST_1}/api/v1/ethena/vesting-and-dilution", headers=h1, params={"simStakeUsde": 25000000}, timeout=20).json()
-    morpho = requests.get(f"https://{RAPIDAPI_HOST_1}/api/v1/morpho/market-and-risk", headers=h1, params={"marketId": MARKET_ID, "simBorrowDelta": 2000000}, timeout=20).json()
+    ethena = requests.get(
+        f"https://{RAPIDAPI_HOST_1}/api/v1/ethena/vesting-and-dilution", 
+        headers=h1, 
+        params={"simStakeUsde": 25000000}, 
+        timeout=20
+    ).json() 
+    time.sleep(2)
+    
+    morpho = requests.get(
+        f"https://{RAPIDAPI_HOST_1}/api/v1/morpho/market-and-risk", 
+        headers=h1, 
+        params={"marketId": MARKET_ID, "simBorrowDelta": 2000000}, 
+        timeout=20
+    ).json()
+    time.sleep(2)
 
     # 2. Fluid & Sky sUSDS (API #2)
-    fluid = requests.get(f"https://{RAPIDAPI_HOST_2}/api/v1/fluid/liquidity-state", headers=h2, params={"token": WSTETH_TOKEN, "simBorrowDelta": 2500}, timeout=20).json()
-    sky = requests.get(f"https://{RAPIDAPI_HOST_2}/api/v1/sky/susds-carry-simulator", headers=h2, params={"leverage": 6}, timeout=20).json()
-
-    fluid_res = requests.get(f"https://{RAPIDAPI_HOST_2}/api/v1/fluid/liquidity-state", headers=h2, params={"token": WSTETH_TOKEN, "simBorrowDelta": 2500}, timeout=20)
-    print("Fluid HTTP Status:", fluid_res.status_code, fluid_res.text[:200])
+    fluid = requests.get(
+        f"https://{RAPIDAPI_HOST_2}/api/v1/fluid/liquidity-state", 
+        headers=h2, 
+        params={"token": WSTETH_TOKEN, "simBorrowDelta": SIM_FLUID_BORROW}, 
+        timeout=20
+    )
+    print("Fluid HTTP Status:", fluid_res.status_code)
     fluid = fluid_res.json()
-
-    sky_res = requests.get(f"https://{RAPIDAPI_HOST_2}/api/v1/sky/susds-carry-simulator", headers=h2, params={"leverage": 6}, timeout=20)
-    print("Sky HTTP Status:", sky_res.status_code, sky_res.text[:200])
+    time.sleep(2)
+    
+    sky = requests.get(
+        f"https://{RAPIDAPI_HOST_2}/api/v1/sky/susds-carry-simulator", 
+        headers=h2, 
+        params={"leverage": TARGET_SKY_LEVERAGE}, 
+        timeout=20
+    )
+    print("Sky HTTP Status:", sky_res.status_code)
     sky = sky_res.json()
     
     # Parse API #1
@@ -61,12 +83,22 @@ def broadcast_alpha():
     kink_flag = "🚨 ABOVE 90% KINK" if is_above_kink else "✅ Below 90% Kink"
     net_5x_roe = ((5.0 * earn_apy) - (4.0 * m_borrow))
 
-    # Parse API #2
-    f_util = float(find_val(fluid, ["utilizationPercent"]))
-    f_borrow = float(find_val(fluid, ["borrowAprPercent"]))
+    # --- Parse Fluid Protocol (API #2) ---
+    f_symbol = str(find_val(fluid, ["symbol"], "wstETH"))
+    f_supply = float(find_val(fluid, ["totalSupplyHuman"]))
+    f_borrow = float(find_val(fluid, ["totalBorrowHuman"]))
     f_avail = float(find_val(fluid, ["availableLiquidityHuman"]))
-    sky_apy = float(find_val(sky, ["liveSsrApyPercent"]))
-    sky_roe = float(find_val(sky, ["netLeveragedRoePercent"]))
+    f_util = float(find_val(fluid, ["utilizationPercent"]))
+    f_borrow_apr = float(find_val(fluid, ["borrowAprPercent"]))
+    f_post_util = float(find_val(fluid, ["postTradeUtilizationPercent"]))
+
+    # --- Parse Sky sUSDS Carry (API #2) ---
+    sky_ssr_apy = float(find_val(sky, ["liveSsrApyPercent"]))
+    sky_ex_rate = float(find_val(sky, ["exchangeRateUsdsPerSusds"], 1.0))
+    sky_bench_borrow = float(find_val(sky, ["morphoBorrowApyPercent"]))
+    sky_net_roe = float(find_val(sky, ["netLeveragedRoePercent"]))
+    sky_breakeven = float(find_val(sky, ["breakevenBorrowApyPercent"]))
+    sky_regime = str(find_val(sky, ["carryRegime"], "UNKNOWN"))
 
     msg = (
         f"📡 <b>Live DeFi Quant Suite Telemetry (4-Protocol Snapshot)</b>\n\n"
@@ -78,8 +110,17 @@ def broadcast_alpha():
         f"• Live Borrow Rate: <code>{m_borrow:.2f}% APY</code>\n"
         f"• +$2M Whale Slippage: <code>{sim_apy:.2f}% APY</code>\n\n"
         f"💰 <b>5x Loop Net Carry:</b> <code>{net_5x_roe:+.2f}% ROE</code>\n\n"
-        f"💧 <b>Fluid (wstETH BigMath):</b> <code>{f_util:.2f}% Util</code> | <code>{f_borrow:.2f}% APR</code> (<code>{f_avail:,.0f} wstETH</code> avail)\n"
-        f"☀️ <b>Sky sUSDS (6x Carry Loop):</b> <code>{sky_apy:.2f}% SSR</code> → <code>{sky_roe:+.2f}% Net ROE</code>\n\n"
+        f"💧 <b>Fluid Protocol ({f_symbol} BigMath):</b>\n"
+        f"• Total Supply / Borrow: <code>{f_supply:,.2f} {f_symbol}</code> / <code>{f_borrow:,.2f} {f_symbol}</code>\n"
+        f"• Available Liquidity: <code>{f_avail:,.2f} {f_symbol}</code>\n"
+        f"• Live Utilization & APR: <code>{f_util:.2f}% util</code> @ <code>{f_borrow_apr:.2f}% Borrow APR</code>\n"
+        f"• Post-Trade Util (+{SIM_FLUID_BORROW:,} {f_symbol}): <code>{f_post_util:.2f}%</code>\n\n"
+        f"☀️ <b>Sky (sUSDS) Live RAY & {TARGET_SKY_LEVERAGE}x Morpho Carry:</b>\n"
+        f"• Live Un-Dripped SSR APY: <code>{sky_ssr_apy:.2f}%</code> (<code>1 sUSDS = {sky_ex_rate:.6f} USDS</code>)\n"
+        f"• Benchmark Borrow APY: <code>{sky_bench_borrow:.2f}%</code>\n"
+        f"• Net {TARGET_SKY_LEVERAGE}x Leveraged ROE: <code>{sky_net_roe:+.2f}% APY</code>\n"
+        f"• Breakeven Borrow Ceiling: <code>{sky_breakeven:.2f}% APY</code>\n"
+        f"• Carry Regime Signal: <code>[{sky_regime}]</code>\n\n"
         f"⚡ <b>Stateless Multicall3 APIs on RapidAPI:</b>\n"
         f"• <a href='{STOREFRONT_MORPHO_ETHENA}'>Morpho Blue & Ethena Quant API</a>\n"
         f"• <a href='{STOREFRONT_FLUID_SKY}'>Fluid BigMath & Sky sUSDS Quant API</a>"
