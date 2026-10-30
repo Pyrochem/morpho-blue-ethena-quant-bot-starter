@@ -44,8 +44,14 @@ def broadcast_alpha():
     earn_apy = float(find_val(ethena, ["liveAnnualizedApyPercent", "currentApyPercent"]))
     drip = float(find_val(ethena, ["linearDripUsdePerSecond", "dripPerSecond"]))
     unvested = float(find_val(ethena, ["unvestedRemainingUsde", "unvestedAmount", "unvestedUsde"]))
+    
+    # Extract Morpho metrics (adapts automatically to your exact schema)
     m_util = float(find_val(morpho, ["utilizationPercent", "utilization"]))
     m_borrow = float(find_val(morpho, ["currentBorrowApyPercent", "borrowApyPercent"]))
+    sim_apy = float(find_val(morpho, ["simulatedPostTradeBorrowApyPercent", "postTradeBorrowApyPercent", "simulatedBorrowApyPercent"], borrow_apy))
+    net_5x_roe = ((5.0 * earn_apy) - (4.0 * borrow_apy))
+    is_above_kink = bool(find_val(morpho, ["isAbove90PercentKink", "isAboveKink"], util >= 90.0))
+    kink_flag = "🚨 ABOVE 90% KINK" if is_above_kink else "✅ Below 90% Kink"
 
     # Parse API #2
     f_util = float(find_val(fluid, ["utilizationPercent"]))
@@ -60,8 +66,8 @@ def broadcast_alpha():
         f"• Real-Time Yield: <code>{earn_apy:.2f}% APY</code>\n"
         f"• Unvested Drip: <code>${drip:.2f}/sec</code> (<code>${unvested:,.0f}</code> rem)\n\n"
         f"🏦 <b>Morpho Blue:</b>\n" 
-        f"• Utilization: <code>{util:.2f}%</code> ({kink_flag})\n"
-        f"• Live Borrow Rate: <code>{borrow_apy:.2f}% APY</code>\n"
+        f"• Utilization: <code>{m_util:.2f}%</code> ({kink_flag})\n"
+        f"• Live Borrow Rate: <code>{m_borrow:.2f}% APY</code>\n"
         f"• +$2M Whale Slippage: <code>{sim_apy:.2f}% APY</code>\n\n"
         f"💰 <b>5x Loop Net Carry:</b> <code>{net_5x_roe:+.2f}% ROE</code>\n\n"
         f"💧 <b>Fluid (wstETH BigMath):</b> <code>{f_util:.2f}% Util</code> | <code>{f_borrow:.2f}% APR</code> (<code>{f_avail:,.0f} wstETH</code> avail)\n"
