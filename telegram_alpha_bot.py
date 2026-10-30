@@ -40,6 +40,14 @@ def broadcast_alpha():
     fluid = requests.get(f"https://{RAPIDAPI_HOST_2}/api/v1/fluid/liquidity-state", headers=h2, params={"token": WSTETH_TOKEN, "simBorrowDelta": 2500}, timeout=20).json()
     sky = requests.get(f"https://{RAPIDAPI_HOST_2}/api/v1/sky/susds-carry-simulator", headers=h2, params={"leverage": 6}, timeout=20).json()
 
+    fluid_res = requests.get(f"https://{RAPIDAPI_HOST_2}/api/v1/fluid/liquidity-state", headers=h2, params={"token": WSTETH_TOKEN, "simBorrowDelta": 2500}, timeout=20)
+    print("Fluid HTTP Status:", fluid_res.status_code, fluid_res.text[:200])
+    fluid = fluid_res.json()
+
+    sky_res = requests.get(f"https://{RAPIDAPI_HOST_2}/api/v1/sky/susds-carry-simulator", headers=h2, params={"leverage": 6}, timeout=20)
+    print("Sky HTTP Status:", sky_res.status_code, sky_res.text[:200])
+    sky = sky_res.json()
+    
     # Parse API #1
     earn_apy = float(find_val(ethena, ["liveAnnualizedApyPercent", "currentApyPercent"]))
     drip = float(find_val(ethena, ["linearDripUsdePerSecond", "dripPerSecond"]))
