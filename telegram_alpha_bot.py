@@ -52,7 +52,7 @@ def broadcast_alpha():
     time.sleep(2)
 
     # 2. Fluid & Sky sUSDS (API #2)
-    fluid = requests.get(
+    fluid_res = requests.get(
         f"https://{RAPIDAPI_HOST_2}/api/v1/fluid/liquidity-state", 
         headers=h2, 
         params={"token": WSTETH_TOKEN, "simBorrowDelta": SIM_FLUID_BORROW}, 
@@ -62,7 +62,7 @@ def broadcast_alpha():
     fluid = fluid_res.json()
     time.sleep(2)
     
-    sky = requests.get(
+    sky_res = requests.get(
         f"https://{RAPIDAPI_HOST_2}/api/v1/sky/susds-carry-simulator", 
         headers=h2, 
         params={"leverage": TARGET_SKY_LEVERAGE}, 
