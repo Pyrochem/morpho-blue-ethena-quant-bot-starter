@@ -23,7 +23,7 @@ def fetch_endpoint(path: str, params: dict = None) -> dict:
     if RAPIDAPI_KEY and "localhost" not in BASE_URL:
         headers["X-RapidAPI-Key"] = RAPIDAPI_KEY
         headers["X-RapidAPI-Host"] = RAPIDAPI_HOST
-
+        print(f"[DEBUG] Requesting URL: {url} | Key Present: {bool(RAPIDAPI_KEY)}")
     resp = requests.get(url, headers=headers, params=params, timeout=25)
     resp.raise_for_status()
     return resp.json()
