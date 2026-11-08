@@ -24,12 +24,13 @@ def fetch_endpoint(path: str, params: dict = None) -> dict:
         headers["X-RapidAPI-Key"] = RAPIDAPI_KEY
         headers["X-RapidAPI-Host"] = RAPIDAPI_HOST
 
-    # Insert spaces so GitHub Actions doesn't mask the domain with ***
-    unmasked_host = " ".join(BASE_URL.replace("https://", "").replace("http://", "")[:28])
+     # Print the LAST 22 characters so we see .onrender.com vs .p.rapidapi.com
+    unmasked_suffix = " ".join(BASE_URL[-22:])
 
     try:
         resp = requests.get(url, headers=headers, params=params, timeout=25)
-        print(f"[DEBUG] Host: {unmasked_host} | Path: {path} | Status: {resp.status_code}")
+        is_rapidapi_proxy = "rapidapi" in str(resp.headers).lower()
+        print(f"[DEBUG] Suffix: {unmasked_suffix} | Via RapidAPI Proxy: {is_rapidapi_proxy} | Status: {resp.status_code}")
 
         if resp.status_code == 200:
             return resp.json()
