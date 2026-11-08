@@ -2,7 +2,7 @@ name: Live On-Chain Alpha Feed
 
 on:
   schedule:
-    - cron: '0 */8 * * *'
+    - cron: '0 */4 * * *'
   workflow_dispatch:
 
 jobs:
@@ -16,6 +16,7 @@ jobs:
       - run: pip install requests
       - run: python telegram_alpha_bot.py
         env:
+          DEFI_API_BASE_URL: ${{ secrets.DEFI_API_BASE_URL }}
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           RAPIDAPI_HOST: ${{ secrets.RAPIDAPI_HOST }}
           RAPIDAPI_HOST_2: ${{ secrets.RAPIDAPI_HOST_2 }}
