@@ -23,13 +23,14 @@ def fetch_endpoint(path: str, params: dict = None) -> dict:
     if RAPIDAPI_KEY and "localhost" not in BASE_URL:
         headers["X-RapidAPI-Key"] = RAPIDAPI_KEY
         headers["X-RapidAPI-Host"] = RAPIDAPI_HOST
-    
-    # Unmask the first 25 chars of BASE_URL by adding spaces so GitHub doesn't print ***
+
+    # Insert spaces so GitHub Actions doesn't mask the domain with ***
     unmasked_host = " ".join(BASE_URL.replace("https://", "").replace("http://", "")[:28])
 
     try:
         resp = requests.get(url, headers=headers, params=params, timeout=25)
-        print(f"[DEBUG] Host: {unmasked_prefix} | Path: {path} | Status: {resp.status_code}")
+        print(f"[DEBUG] Host: {unmasked_host} | Path: {path} | Status: {resp.status_code}")
+
         if resp.status_code == 200:
             return resp.json()
         else:
@@ -37,7 +38,7 @@ def fetch_endpoint(path: str, params: dict = None) -> dict:
             return {"error": f"HTTP {resp.status_code}", "raw": resp.text}
     except Exception as e:
         print(f"[ERROR] Request failed on {path}: {e}")
-        return {"error": str(e)} 
+        return {"error": str(e)}
 
 
 def format_num(val, decimals=2):
