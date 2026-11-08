@@ -25,10 +25,10 @@ def fetch_endpoint(path: str, params: dict = None) -> dict:
         headers["X-RapidAPI-Host"] = RAPIDAPI_HOST
     
     # Unmask the first 25 chars of BASE_URL by adding spaces so GitHub doesn't print ***
-    unmasked_prefix = " ".join(BASE_URL[:25])
+    unmasked_host = " ".join(BASE_URL.replace("https://", "").replace("http://", "")[:28])
 
     try:
-        resp = requests.get(url, headers=headers, params=params, timeout=20)
+        resp = requests.get(url, headers=headers, params=params, timeout=25)
         print(f"[DEBUG] Host: {unmasked_prefix} | Path: {path} | Status: {resp.status_code}")
         if resp.status_code == 200:
             return resp.json()
