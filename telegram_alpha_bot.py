@@ -31,8 +31,8 @@ def fetch_endpoint(path: str, params: dict = None) -> dict:
         resp = requests.get(url, headers=headers, params=params, timeout=20)
         print(f"[DEBUG] Host: {unmasked_prefix} | Path: {path} | Status: {resp.status_code}")
         
-    resp.raise_for_status()
-    return resp.json()
+    
+   
 
 
 def format_num(val, decimals=2):
