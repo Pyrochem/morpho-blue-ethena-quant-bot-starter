@@ -30,9 +30,14 @@ def fetch_endpoint(path: str, params: dict = None) -> dict:
     try:
         resp = requests.get(url, headers=headers, params=params, timeout=20)
         print(f"[DEBUG] Host: {unmasked_prefix} | Path: {path} | Status: {resp.status_code}")
-    return resp.json()
-    
-   
+        if resp.status_code == 200:
+            return resp.json()
+        else:
+            print(f"[WARN] Non-200 response ({resp.status_code}) on {path}: {resp.text[:200]}")
+            return {"error": f"HTTP {resp.status_code}", "raw": resp.text}
+    except Exception as e:
+        print(f"[ERROR] Request failed on {path}: {e}")
+        return {"error": str(e)} 
 
 
 def format_num(val, decimals=2):
