@@ -14,7 +14,7 @@ RAPIDAPI_HUB_URL = os.getenv(
 ).strip()
 
 # Optional override if testing against Render or localhost directly
-BASE_URL = os.getenv("DEFI_API_BASE_URL", f"https://{RAPIDAPI_HOST}").rstrip("/")
+BASE_URL = (os.getenv("DEFI_API_BASE_URL") or f"https://{RAPIDAPI_HOST}").strip().rstrip("/")
 
 
 def fetch_endpoint(path: str, params: dict = None) -> dict:
