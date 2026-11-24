@@ -1,4 +1,5 @@
 import os
+import time
 import requests
 
 # Existing secrets already configured in your environment / GitHub Actions
@@ -24,7 +25,7 @@ def fetch_endpoint(path: str, params: dict = None) -> dict:
         headers["X-RapidAPI-Key"] = RAPIDAPI_KEY
         headers["X-RapidAPI-Host"] = RAPIDAPI_HOST
 
-     # Print the LAST 22 characters so we see .onrender.com vs .p.rapidapi.com
+    # Print the LAST 22 characters so we see .onrender.com vs .p.rapidapi.com
     unmasked_suffix = " ".join(BASE_URL[-22:])
 
     try:
@@ -96,7 +97,7 @@ def build_digest_message() -> str:
     swap_str = f"{swap_shift} bps" if swap_shift is not None else "N/A"
 
     lines = [
-        "⚡ <b>DeFi Quant 6-Protocol Radar & Risk Telemetry</b>",
+        "⚡ <b>DeFi Quant 7-Protocol Radar & Risk Telemetry</b>",
         f"📦 <b>Ethereum Block:</b> <code>#{block_num}</code>",
         "",
         "🎯 <b>1. Cross-Protocol Stablecoin Carry Radar (5x Loop)</b>",
@@ -146,9 +147,18 @@ def send_telegram_message(text: str):
         "parse_mode": "HTML",
         "disable_web_page_preview": True,
     }
-    resp = requests.post(tg_url, json=payload, timeout=15)
-    resp.raise_for_status()
-    print("✅ Successfully broadcast 7-endpoint Quant Briefing to Telegram!")
+
+    for attempt in range(1, 4):
+        try:
+            resp = requests.post(tg_url, json=payload, timeout=(10, 30))
+            resp.raise_for_status()
+            print("✅ Successfully broadcast 7-endpoint Quant Briefing to Telegram!")
+            return
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+            if attempt == 3:
+                raise
+            print(f"[WARN] Telegram request timed out (attempt {attempt}/3): {e}. Retrying in 5s...")
+            time.sleep(5)
 
 
 if __name__ == "__main__":
